@@ -378,6 +378,13 @@
         return [HKObjectType quantityTypeForIdentifier:HKQuantityTypeIdentifierBloodAlcoholContent];
     }
 
+    // Blood Pressure
+    if ([@"BloodPressureDiastolic" isEqualToString:key]) {
+        return [HKObjectType quantityTypeForIdentifier:HKQuantityTypeIdentifierBloodPressureDiastolic];
+    } else if ([@"BloodPressureSystolic" isEqualToString:key]) {
+        return [HKObjectType quantityTypeForIdentifier:HKQuantityTypeIdentifierBloodPressureSystolic];
+    }
+
     return nil;
 }
 
