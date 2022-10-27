@@ -374,6 +374,40 @@
 }
 
 
+- (void)vitals_saveBloodPressureSample:(NSDictionary *)input callback:(RCTResponseSenderBlock)callback
+{
+    HKCorrelationType *bloodPressureCorrelationType = [HKCorrelationType correlationTypeForIdentifier:HKCorrelationTypeIdentifierBloodPressure];
+    HKQuantityType *systolicType = [HKQuantityType quantityTypeForIdentifier:HKQuantityTypeIdentifierBloodPressureSystolic];
+    HKQuantityType *diastolicType = [HKQuantityType quantityTypeForIdentifier:HKQuantityTypeIdentifierBloodPressureDiastolic];
+
+    HKUnit *unit = [RCTAppleHealthKit hkUnitFromOptions:input key:@"unit" withDefault:[HKUnit millimeterOfMercuryUnit]];
+    double systolicValue = [RCTAppleHealthKit doubleFromOptions:input key:@"systolicValue" withDefault:0];
+    double diastolicValue = [RCTAppleHealthKit doubleFromOptions:input key:@"diastolicValue" withDefault:0];
+    NSDate *startDate = [RCTAppleHealthKit dateFromOptions:input key:@"startDate" withDefault:[NSDate date]];
+    NSDate *endDate = [RCTAppleHealthKit dateFromOptions:input key:@"endDate" withDefault:[NSDate date]];
+
+    HKQuantity *systolicQuantity = [HKQuantity quantityWithUnit:unit doubleValue:systolicValue];
+    HKQuantity *diastolicQuantity = [HKQuantity quantityWithUnit:unit doubleValue:diastolicValue];
+
+    HKQuantitySample *systolicSample = [HKQuantitySample quantitySampleWithType:systolicType quantity:systolicQuantity startDate:startDate endDate:endDate];
+    HKQuantitySample *diastolicSample = [HKQuantitySample quantitySampleWithType:diastolicType quantity:diastolicQuantity startDate:startDate endDate:endDate];
+
+    NSSet *objects = [NSSet setWithObjects:systolicSample, diastolicSample, nil];
+    HKCorrelation *bloodPressureCorrelation = [HKCorrelation correlationWithType:bloodPressureCorrelationType startDate:startDate endDate:endDate objects:objects];
+
+    [self.healthStore saveObject:bloodPressureCorrelation withCompletion:^(BOOL success, NSError *error) {
+        if(success){
+            callback(@[[NSNull null], @(success)]);
+            return;
+        } else {
+            NSLog(@"error saving blood pressure sample: %@", error);
+            callback(@[RCTMakeError(@"error saving blood pressure sample:", error, nil)]);
+            return;
+        }
+    }];
+}
+
+
 - (void)vitals_getRespiratoryRateSamples:(NSDictionary *)input callback:(RCTResponseSenderBlock)callback
 {
     HKQuantityType *respiratoryRateType = [HKQuantityType quantityTypeForIdentifier:HKQuantityTypeIdentifierRespiratoryRate];
